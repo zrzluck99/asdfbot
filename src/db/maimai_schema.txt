@@ -1,0 +1,108 @@
+sqlite> .schema best_record
+CREATE TABLE best_record (
+  user_id     TEXT    NOT NULL REFERENCES user(id),
+  music_id    INTEGER NOT NULL,
+  diff_index  INTEGER NOT NULL,
+  achievements REAL   NOT NULL,
+  ra          INTEGER NOT NULL,
+  rank_id     INTEGER,
+  fc_id       INTEGER,
+  fs_id       INTEGER,
+  dxscore     INTEGER,
+  ts          DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, music_id, diff_index),
+  FOREIGN KEY (music_id, diff_index)
+    REFERENCES chart (music_id, diff_index)
+);
+
+sqlite> .schema user
+CREATE TABLE user (
+  id        TEXT NOT NULL PRIMARY KEY,
+  additional_rating INTEGER,
+  nickname  TEXT,
+  plate     TEXT,
+  rating    INTEGER,
+  ts        DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+sqlite> .schema chart
+CREATE TABLE chart (
+id          INTEGER PRIMARY KEY AUTOINCREMENT,
+music_id    INTEGER NOT NULL REFERENCES music(id),
+diff_index  INTEGER NOT NULL,
+ds          REAL NOT NULL,
+level       TEXT,
+notes       INTEGER,
+tap         INTEGER,
+hold        INTEGER,
+slide       INTEGER,
+touch       INTEGER,
+break       INTEGER,
+charter     TEXT,
+UNIQUE(music_id, diff_index)
+);
+
+sqlite> .schema music
+CREATE TABLE music (
+  id          INTEGER PRIMARY KEY,
+  title       TEXT NOT NULL,
+  type        TEXT NOT NULL,
+  artist      TEXT,
+  genre       TEXT,
+  bpm         INTEGER,
+  release_date TEXT,
+  version     TEXT,
+  is_new      INTEGER
+, version_id INTEGER);
+
+sqlite> .schema alias
+CREATE TABLE alias (
+        music_id   INTEGER NOT NULL,
+        alias_text TEXT    NOT NULL,
+        PRIMARY KEY(music_id, alias_text)
+    );
+CREATE INDEX idx_alias_music ON alias(music_id);
+CREATE INDEX idx_alias_text  ON alias(alias_text);
+
+sqlite> .schema alias_fts
+CREATE VIRTUAL TABLE alias_fts USING fts5(alias_text, music_id UNINDEXED)
+/* alias_fts(alias_text,music_id) */;
+
+sqlite> .schema revived_music
+CREATE TABLE revived_music (
+id    INTEGER NOT NULL REFERENCES music(id)
+);
+
+sqlite> .schema chart_stats
+CREATE TABLE chart_stats (
+  music_id   INTEGER    NOT NULL,
+  diff_index  INTEGER NOT NULL,
+  level      TEXT       NOT NULL, 
+  cnt       INTEGER    NOT NULL, 
+  fit_diff  REAL       NOT NULL, 
+  avg       REAL       NOT NULL,  
+  avg_dx    REAL       NOT NULL,
+  std_dev   REAL       NOT NULL,
+  PRIMARY KEY (music_id, diff_index),
+  FOREIGN KEY (music_id, diff_index) REFERENCES chart(music_id, diff_index)
+);
+
+sqlite> .schema chart_rating_dist
+CREATE TABLE chart_rating_dist (
+  music_id       INTEGER    NOT NULL,
+  diff_index  INTEGER NOT NULL,
+  rating_index  INTEGER    NOT NULL, 
+  count         INTEGER    NOT NULL,
+  PRIMARY KEY (music_id, diff_index, rating_index),
+  FOREIGN KEY (music_id, diff_index) REFERENCES chart_stats(music_id, diff_index)
+);
+
+sqlite> .schema chart_fc_dist
+CREATE TABLE chart_fc_dist (
+  music_id       INTEGER    NOT NULL,
+  diff_index  INTEGER NOT NULL,
+  fc_index   INTEGER    NOT NULL, 
+  count      INTEGER    NOT NULL,
+  PRIMARY KEY (music_id, diff_index, fc_index),
+  FOREIGN KEY (music_id, diff_index) REFERENCES chart_stats(music_id, diff_index)
+);
