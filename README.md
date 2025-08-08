@@ -1,5 +1,7 @@
 # asdf-nonebot
 
+正在开发中...
+
 ## How to start
 
 1. generate project using `nb create` .
