@@ -512,18 +512,19 @@ class Plate(Dict):
     plate_all: List[Tuple[MusicChart, BestRecord]] = None
     type: Optional[str] = None
 
-    def single_achieved(self, record: BestRecord) -> bool:
+    @classmethod
+    def single_achieved(cls, mtype: Optional[str], record: BestRecord) -> bool:
         """
         检查单个 record 是否达成指定的 plate 类型
         """
-        if (not self.type) or (self.type not in rank_list_lower + fc_list_lower + fs_list_lower):
-            raise ValueError(f"Invalid type: {self.type}. Must be one of {rank_list_lower + fc_list_lower + fs_list_lower}")
-        if self.type in rank_list_lower:
-            return record and record.rank_id >= rank_list_lower.index(self.type)
-        elif self.type in fc_list_lower:
-            return record and record.fc_id >= fc_list_lower.index(self.type)
-        elif self.type in fs_list_lower:
-            return record and record.fs_id >= fs_list_lower.index(self.type)
+        if (not mtype) or (mtype not in rank_list_lower + fc_list_lower + fs_list_lower):
+            raise ValueError(f"Invalid type: {mtype}. Must be one of {rank_list_lower + fc_list_lower + fs_list_lower}")
+        if mtype in rank_list_lower:
+            return record and record.rank_id >= rank_list_lower.index(mtype)
+        elif mtype in fc_list_lower:
+            return record and record.fc_id >= fc_list_lower.index(mtype)
+        elif mtype in fs_list_lower:
+            return record and record.fs_id >= fs_list_lower.index(mtype)
         else:
             return False
 
@@ -534,7 +535,7 @@ class Plate(Dict):
         for chart, best_record in self.plate_all:
             if not best_record:
                 return False
-            if not self.single_achieved(self.type, best_record):
+            if not Plate.single_achieved(self.type, best_record):
                 return False
         return True
     
@@ -545,12 +546,35 @@ class Plate(Dict):
         for chart, best_record in self.plate:
             if not best_record:
                 return False
-            if not self.single_achieved(self.type, best_record):
+            if not Plate.single_achieved(self.type, best_record):
                 return False
         return True
 
-
-
+    def get_lists_by_level(self) -> Dict[str, List[Tuple[MusicChart, BestRecord]]]:
+        """
+        获取所有难度的 plate 列表，按 level 分类
+        """
+        if not self.plate_all:
+            return {}
+        result: Dict[str, List[Tuple[MusicChart, BestRecord]]] = {}
+        for chart, record in self.plate_all:
+            if chart.level not in result:
+                result[chart.level] = []
+            result[chart.level].append((chart, record))
+        return result
+    
+    def get_lists_by_ds(self) -> Dict[float, List[Tuple[MusicChart, BestRecord]]]:
+        """
+        获取所有难度的 plate 列表，按 ds 分类
+        """
+        if not self.plate_all:
+            return {}
+        result: Dict[float, List[Tuple[MusicChart, BestRecord]]] = {}
+        for chart, record in self.plate_all:
+            if chart.ds not in result:
+                result[chart.ds] = []
+            result[chart.ds].append((chart, record))
+        return result
 
 
     

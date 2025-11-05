@@ -1,4 +1,4 @@
-from nonebot import on_command, on_regex, on_message
+from nonebot import on_command, on_regex, on_message, logger
 from nonebot.params import CommandArg, Arg, RegexStr, ArgPlainText, RegexGroup
 from nonebot.adapters.qq import Bot, Event, Message, MessageSegment, C2CMessageCreateEvent, GroupAtMessageCreateEvent
 from nonebot.matcher import Matcher
@@ -59,7 +59,8 @@ async def refresh(username: str) -> Tuple[int, str]:
         if e.status == 400:
             return 2, "未找到此玩家，请确登陆diving-fish 录入分数，并正确填写用户名与QQ号。"
         elif e.status == 403:
-            return 1, "请勿频繁刷新成绩，稍后再试。"
+            # return 1, "请勿频繁刷新成绩，稍后再试。"
+            return 1, "获取失败，请检查是否允许公开查询成绩。"
         else:
             return 2, f"发生错误：{e.status} {e.message}"
     except asyncio.TimeoutError:
